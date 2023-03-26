@@ -8,7 +8,7 @@
 	<p align="center">
 		对于《我的世界》<code>.mcstructure</code> 文件的读写操作库
 	</p>
-</p>
+
 
 
 [![][GitHub: phoenixR]](https://github.com/phoenixr-codes)
