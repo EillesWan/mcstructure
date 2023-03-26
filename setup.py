@@ -20,7 +20,7 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     classifiers=[
         "Intended Audience :: Developers",
-        "Natural Language :: English (Simplified)",
+        "Natural Language :: English",
         "License :: OSI Approved :: Apache Software License",
         "Operating System :: OS Independent",
         "Topic :: Software Development :: Libraries",
