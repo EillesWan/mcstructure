@@ -88,7 +88,7 @@
 # 代码样例
 _Code Provider - @EillesWan_
 
-以下是一些例子(以 `Python` 的数据结构为例)。
+以下是一些例子(以 `Python` 的 `数据结构` 为例)。
 
 ## 样例 `Ⅰ`
 ```python
