@@ -65,7 +65,10 @@
                 - ![compound] `复合标签(TAG_Compound)` —— 单 `方块` 及其 `方块状态(Block States)`
                     - ![string] `字符串(TAG_String) - name` —— `方块 ID (identifier)` ，形如 `minecraft:planks`
                     - ![compound] `复合标签(TAG_Compound) - states` —— `方块状态(Block States)`，以 `键值对` 的形式出现，形如 `"wood_type": "acacia"`、`wood_type: "acacia"`、`bite_counter: 3` 和 `open_bit: 1b` 。
-                        - 其 `值` 将转换为有效的 `NBT 标签` ，如在游戏内的 `枚举值(Enum Values)` 将被转换为 `字符串(String)` ；`标量(Scalar Numbers)` 将被转换为 `整型(TAG_Int32)` ；`布尔值(Boolean Values)` 会被转为 `字节型(TAG_Byte)`
+                        - 其 `值` 将转换为有效的 `NBT 标签` ，以下是一些 `转换规则`
+                            - `枚举值(Enum Values)` 将被转换为 `字符串(String)`
+                            - `标量(Scalar Numbers)` 将被转换为 `整型(TAG_Int32)`
+                            - `布尔值(Boolean Values)` 会被转为 `字节型(TAG_Byte)`
                     - ![int] `整型(TAG_Int32) - version` —— 指代 `兼容版本(Compatibility Versioning Number)`
                         - 此文撰写时所对应的版本号是 `17959425` ，即游戏版本 `1.19`
             - ![compound] `复合标签(TAG_Compound) - block_position_data` —— 包含 `结构` 中各个 `方块` 的 `附加数据(Additional Data)` 。每一个 `键(Key)` 皆为`block_indices` 中 `下标索引(index)` 所对应的方块，数据类型当然为 `整型(TAG_Int32)` 。此处不会保有多层方块的指代，因为这个字段可以在 `值(Value)` 中被描述
