@@ -66,7 +66,7 @@
                     - ![string] `字符串(TAG_String) - name` —— `方块 ID (identifier)` ，形如 `minecraft:planks`
                     - ![compound] `复合标签(TAG_Compound) - states` —— `方块状态(Block States)`，以 `键值对` 的形式出现，形如 `"wood_type": "acacia"`、`wood_type: "acacia"`、`bite_counter: 3` 和 `open_bit: 1b` 。
                         - 其 `值` 将转换为有效的 `NBT 标签` ，以下是一些 `转换规则`
-                            - `枚举值(Enum Values)` 将被转换为 `字符串(String)`
+                            - `枚举值(Enum Values)` 将被转换为 `字符串(TAG_String)`
                             - `标量(Scalar Numbers)` 将被转换为 `整型(TAG_Int32)`
                             - `布尔值(Boolean Values)` 会被转为 `字节型(TAG_Byte)`
                     - ![int] `整型(TAG_Int32) - version` —— 指代 `兼容版本(Compatibility Versioning Number)`
