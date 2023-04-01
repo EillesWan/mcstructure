@@ -11,8 +11,6 @@ OverflowMethod = Literal["fold", "crop", "ellipsis", "ignore"]
 
 MainConsole = Console()
 
-
-
 def format_ipt(
     notice: str,
     fun,
@@ -52,19 +50,19 @@ file_path = format_ipt("file_path: ",os.path.exists,"Err: not found")[0]
 with open(file_path,'rb+') as f:
     nbt = NBTFile(f, little_endian=True)
 
-from TrimMCStruct import _into_pyobj
+# from TrimMCStruct import _into_pyobj
 
-MainConsole.print(_into_pyobj(nbt),style="#F0F2F4 on #121110",)
+# prt(_into_pyobj(nbt))
 
-# def deep(sth):
-#     if type(sth) == TAG_List:
-#         return [deep(i) for i in sth]
-#     elif type(sth) == TAG_Compound:
-#         return dict(zip(sth.keys(),[deep(i) for i in sth.values()]))
-#     else:
-#         return sth
-    
+def deep(sth):
+    if type(sth) == TAG_List:
+        return [deep(i) for i in sth]
+    elif type(sth) == TAG_Compound:
+        return dict(zip(sth.keys(),[deep(i) for i in sth.values()]))
+    else:
+        return sth
+  
 
-# prt(deep(dict(zip(nbt.keys(),[deep(i) for i in nbt.values()]))))
+MainConsole.print(deep(dict(zip(nbt.keys(),[deep(i) for i in nbt.values()]))),style="#F0F2F4 on #121110",)
 
 
