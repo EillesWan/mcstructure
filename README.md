@@ -2,12 +2,12 @@
 
 ## ***FOR UPDATING FILES IN HERE(GitHub)***  此处编辑请注意
 
-> We have setted a automatic mirror between Gitee(a native Chinese Code Hosting Platform). 
-> That means you should check whether there is another update on Gitee if you want to git file(s) updated on GitHub.
+> We have setted a automatic mirror between Gitee(a Chinese native Code Hosting Platform). 
+> That means you should check whether there is another update on Gitee if you want to get file(s) updated on GitHub.
 > If a update is pushed on Gitee and not been pushed into GitHub yet, 
-> A push will **COVERED** by the another one, which branch will leave is under indeterminacy.
-> So we STRONG suggest not to push in this repo here in GitHub.
-> But if you want, make sure that in 30min, there is NOT ANY pushes on this repo on Gitee.
+> A push will **COVERED** by the another one, which branch to deleted is under indeterminacy, maybe both destoried is possible.
+> So we STRONG suggest not to push updates here in GitHub.
+> But if you want to, make sure that in 30min, there is NOT ANY pushes in this repository on Gitee.
 >
 > 由于我们建立了对于 Gitee 和 GitHub 之间的双向更新镜像，
 > 如果您需要在此处(GitHub处)进行更新之前请三思，我们非常建议你在 Gitee 上更新而不是 GitHub。
