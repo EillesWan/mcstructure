@@ -12,6 +12,7 @@
 - [`代码样例`](#代码样例)
     - [`样例 Ⅰ`](#样例-ⅰ)
     - [`样例 Ⅱ`](#样例-ⅱ)
+    - [`样例 Ⅱ`](#样例-ⅲ)
 
 
 # 说明
@@ -90,7 +91,7 @@ _Code Provider - @EillesWan_
 
 以下是一些例子(以 `Python` 的数据结构为模拟)。
 
-## 样例 `Ⅰ`
+## 样例 Ⅰ
 ```python
 # 大小为 1x3x1 (XYZ) 的
 # 从下往上分别是一个指令方块、一个铁块和一个空气方块的
@@ -161,7 +162,7 @@ _Code Provider - @EillesWan_
 
 
 
-## 样例 `Ⅱ`
+## 样例 Ⅱ
 ```python
 # 大小为 2x2x2 (XYZ) 的
 # 全是白色羊毛的
@@ -207,5 +208,346 @@ _Code Provider - @EillesWan_
         }
     },
     'structure_world_origin': [TAG_Int(0, None), TAG_Int(0, None), TAG_Int(0, None)]
+}
+```
+
+
+## 样例 Ⅲ
+```python
+# 大版本 1.19 
+# 一个竖列放置9个指令方块
+# 分别为 脉冲无条件红石驱动 脉冲有条件始终执行 脉冲无条件始终执行 剩下六个以此类推为链式和循环的
+# 从下往上前四个朝上放置，从上往下四个朝下放置，中间的朝着X轴正方向
+{
+    'format_version': TAG_Int(1, 'format_version'),
+    'size': [TAG_Int(1, None), TAG_Int(9, None), TAG_Int(1, None)],
+    'structure': {
+        'block_indices': [
+            [
+                TAG_Int(0, None),
+                TAG_Int(1, None),
+                TAG_Int(0, None),
+                TAG_Int(2, None),
+                TAG_Int(3, None),
+                TAG_Int(4, None),
+                TAG_Int(5, None),
+                TAG_Int(6, None),
+                TAG_Int(5, None)
+            ],
+            [
+                TAG_Int(-1, None),
+                TAG_Int(-1, None),
+                TAG_Int(-1, None),
+                TAG_Int(-1, None),
+                TAG_Int(-1, None),
+                TAG_Int(-1, None),
+                TAG_Int(-1, None),
+                TAG_Int(-1, None),
+                TAG_Int(-1, None)
+            ]
+        ],
+        'entities': [],
+        'palette': {
+            'default': {
+                'block_palette': [
+                    {
+                        'name': TAG_String('minecraft:command_block', 'name'),
+                        'states': {
+                            'conditional_bit': TAG_Byte(0, 'conditional_bit'),
+                            'facing_direction': TAG_Int(1, 'facing_direction')
+                        },
+                        'version': TAG_Int(18040335, 'version')
+                    },
+                    {
+                        'name': TAG_String('minecraft:command_block', 'name'),
+                        'states': {
+                            'conditional_bit': TAG_Byte(1, 'conditional_bit'),
+                            'facing_direction': TAG_Int(1, 'facing_direction')
+                        },
+                        'version': TAG_Int(18040335, 'version')
+                    },
+                    {
+                        'name': TAG_String('minecraft:chain_command_block', 'name'),
+                        'states': {
+                            'conditional_bit': TAG_Byte(0, 'conditional_bit'),
+                            'facing_direction': TAG_Int(1, 'facing_direction')
+                        },
+                        'version': TAG_Int(18040335, 'version')
+                    },
+                    {
+                        'name': TAG_String('minecraft:chain_command_block', 'name'),
+                        'states': {
+                            'conditional_bit': TAG_Byte(1, 'conditional_bit'),
+                            'facing_direction': TAG_Int(5, 'facing_direction')
+                        },
+                        'version': TAG_Int(18040335, 'version')
+                    },
+                    {
+                        'name': TAG_String('minecraft:chain_command_block', 'name'),
+                        'states': {
+                            'conditional_bit': TAG_Byte(0, 'conditional_bit'),
+                            'facing_direction': TAG_Int(0, 'facing_direction')
+                        },
+                        'version': TAG_Int(18040335, 'version')
+                    },
+                    {
+                        'name': TAG_String('minecraft:repeating_command_block', 'name'),
+                        'states': {
+                            'conditional_bit': TAG_Byte(0, 'conditional_bit'),
+                            'facing_direction': TAG_Int(0, 'facing_direction')
+                        },
+                        'version': TAG_Int(18040335, 'version')
+                    },
+                    {
+                        'name': TAG_String('minecraft:repeating_command_block', 'name'),
+                        'states': {
+                            'conditional_bit': TAG_Byte(1, 'conditional_bit'),
+                            'facing_direction': TAG_Int(0, 'facing_direction')
+                        },
+                        'version': TAG_Int(18040335, 'version')
+                    }
+                ],
+                'block_position_data': {
+                    '0': {
+                        'block_entity_data': {
+                            'Command': TAG_String('', 'Command'),
+                            'CustomName': TAG_String('', 'CustomName'),
+                            'ExecuteOnFirstTick': TAG_Byte(0, 'ExecuteOnFirstTick'),
+                            'LPCommandMode': TAG_Int(0, 'LPCommandMode'),
+                            'LPCondionalMode': TAG_Byte(0, 'LPCondionalMode'),
+                            'LPRedstoneMode': TAG_Byte(0, 'LPRedstoneMode'),
+                            'LastExecution': TAG_Long(0, 'LastExecution'),
+                            'LastOutput': TAG_String('', 'LastOutput'),
+                            'LastOutputParams': [],
+                            'SuccessCount': TAG_Int(0, 'SuccessCount'),
+                            'TickDelay': TAG_Int(0, 'TickDelay'),
+                            'TrackOutput': TAG_Byte(1, 'TrackOutput'),
+                            'Version': TAG_Int(32, 'Version'),
+                            'auto': TAG_Byte(0, 'auto'),
+                            'conditionMet': TAG_Byte(0, 'conditionMet'),
+                            'conditionalMode': TAG_Byte(0, 'conditionalMode'),
+                            'id': TAG_String('CommandBlock', 'id'),
+                            'isMovable': TAG_Byte(1, 'isMovable'),
+                            'powered': TAG_Byte(0, 'powered'),
+                            'x': TAG_Int(0, 'x'),
+                            'y': TAG_Int(-60, 'y'),
+                            'z': TAG_Int(0, 'z')
+                        }
+                    },
+                    '1': {
+                        'block_entity_data': {
+                            'Command': TAG_String('', 'Command'),
+                            'CustomName': TAG_String('', 'CustomName'),
+                            'ExecuteOnFirstTick': TAG_Byte(0, 'ExecuteOnFirstTick'),
+                            'LPCommandMode': TAG_Int(0, 'LPCommandMode'),
+                            'LPCondionalMode': TAG_Byte(0, 'LPCondionalMode'),
+                            'LPRedstoneMode': TAG_Byte(0, 'LPRedstoneMode'),
+                            'LastExecution': TAG_Long(0, 'LastExecution'),
+                            'LastOutput': TAG_String('', 'LastOutput'),
+                            'LastOutputParams': [],
+                            'SuccessCount': TAG_Int(0, 'SuccessCount'),
+                            'TickDelay': TAG_Int(0, 'TickDelay'),
+                            'TrackOutput': TAG_Byte(1, 'TrackOutput'),
+                            'Version': TAG_Int(32, 'Version'),
+                            'auto': TAG_Byte(1, 'auto'),
+                            'conditionMet': TAG_Byte(0, 'conditionMet'),
+                            'conditionalMode': TAG_Byte(1, 'conditionalMode'),
+                            'id': TAG_String('CommandBlock', 'id'),
+                            'isMovable': TAG_Byte(1, 'isMovable'),
+                            'powered': TAG_Byte(0, 'powered'),
+                            'x': TAG_Int(0, 'x'),
+                            'y': TAG_Int(-59, 'y'),
+                            'z': TAG_Int(0, 'z')
+                        }
+                    },
+                    '2': {
+                        'block_entity_data': {
+                            'Command': TAG_String('', 'Command'),
+                            'CustomName': TAG_String('', 'CustomName'),
+                            'ExecuteOnFirstTick': TAG_Byte(0, 'ExecuteOnFirstTick'),
+                            'LPCommandMode': TAG_Int(0, 'LPCommandMode'),
+                            'LPCondionalMode': TAG_Byte(0, 'LPCondionalMode'),
+                            'LPRedstoneMode': TAG_Byte(0, 'LPRedstoneMode'),
+                            'LastExecution': TAG_Long(0, 'LastExecution'),
+                            'LastOutput': TAG_String('', 'LastOutput'),
+                            'LastOutputParams': [],
+                            'SuccessCount': TAG_Int(0, 'SuccessCount'),
+                            'TickDelay': TAG_Int(0, 'TickDelay'),
+                            'TrackOutput': TAG_Byte(1, 'TrackOutput'),
+                            'Version': TAG_Int(32, 'Version'),
+                            'auto': TAG_Byte(1, 'auto'),
+                            'conditionMet': TAG_Byte(0, 'conditionMet'),
+                            'conditionalMode': TAG_Byte(0, 'conditionalMode'),
+                            'id': TAG_String('CommandBlock', 'id'),
+                            'isMovable': TAG_Byte(1, 'isMovable'),
+                            'powered': TAG_Byte(0, 'powered'),
+                            'x': TAG_Int(0, 'x'),
+                            'y': TAG_Int(-58, 'y'),
+                            'z': TAG_Int(0, 'z')
+                        }
+                    },
+                    '3': {
+                        'block_entity_data': {
+                            'Command': TAG_String('', 'Command'),
+                            'CustomName': TAG_String('', 'CustomName'),
+                            'ExecuteOnFirstTick': TAG_Byte(0, 'ExecuteOnFirstTick'),
+                            'LPCommandMode': TAG_Int(0, 'LPCommandMode'),
+                            'LPCondionalMode': TAG_Byte(0, 'LPCondionalMode'),
+                            'LPRedstoneMode': TAG_Byte(0, 'LPRedstoneMode'),
+                            'LastExecution': TAG_Long(0, 'LastExecution'),
+                            'LastOutput': TAG_String('', 'LastOutput'),
+                            'LastOutputParams': [],
+                            'SuccessCount': TAG_Int(0, 'SuccessCount'),
+                            'TickDelay': TAG_Int(0, 'TickDelay'),
+                            'TrackOutput': TAG_Byte(1, 'TrackOutput'),
+                            'Version': TAG_Int(32, 'Version'),
+                            'auto': TAG_Byte(0, 'auto'),
+                            'conditionMet': TAG_Byte(0, 'conditionMet'),
+                            'conditionalMode': TAG_Byte(0, 'conditionalMode'),
+                            'id': TAG_String('CommandBlock', 'id'),
+                            'isMovable': TAG_Byte(1, 'isMovable'),
+                            'powered': TAG_Byte(0, 'powered'),
+                            'x': TAG_Int(0, 'x'),
+                            'y': TAG_Int(-57, 'y'),
+                            'z': TAG_Int(0, 'z')
+                        }
+                    },
+                    '4': {
+                        'block_entity_data': {
+                            'Command': TAG_String('', 'Command'),
+                            'CustomName': TAG_String('', 'CustomName'),
+                            'ExecuteOnFirstTick': TAG_Byte(0, 'ExecuteOnFirstTick'),
+                            'LPCommandMode': TAG_Int(0, 'LPCommandMode'),
+                            'LPCondionalMode': TAG_Byte(0, 'LPCondionalMode'),
+                            'LPRedstoneMode': TAG_Byte(0, 'LPRedstoneMode'),
+                            'LastExecution': TAG_Long(0, 'LastExecution'),
+                            'LastOutput': TAG_String('', 'LastOutput'),
+                            'LastOutputParams': [],
+                            'SuccessCount': TAG_Int(0, 'SuccessCount'),
+                            'TickDelay': TAG_Int(0, 'TickDelay'),
+                            'TrackOutput': TAG_Byte(1, 'TrackOutput'),
+                            'Version': TAG_Int(32, 'Version'),
+                            'auto': TAG_Byte(1, 'auto'),
+                            'conditionMet': TAG_Byte(0, 'conditionMet'),
+                            'conditionalMode': TAG_Byte(1, 'conditionalMode'),
+                            'id': TAG_String('CommandBlock', 'id'),
+                            'isMovable': TAG_Byte(1, 'isMovable'),
+                            'powered': TAG_Byte(0, 'powered'),
+                            'x': TAG_Int(0, 'x'),
+                            'y': TAG_Int(-56, 'y'),
+                            'z': TAG_Int(0, 'z')
+                        }
+                    },
+                    '5': {
+                        'block_entity_data': {
+                            'Command': TAG_String('', 'Command'),
+                            'CustomName': TAG_String('', 'CustomName'),
+                            'ExecuteOnFirstTick': TAG_Byte(0, 'ExecuteOnFirstTick'),
+                            'LPCommandMode': TAG_Int(0, 'LPCommandMode'),
+                            'LPCondionalMode': TAG_Byte(0, 'LPCondionalMode'),
+                            'LPRedstoneMode': TAG_Byte(0, 'LPRedstoneMode'),
+                            'LastExecution': TAG_Long(0, 'LastExecution'),
+                            'LastOutput': TAG_String('', 'LastOutput'),
+                            'LastOutputParams': [],
+                            'SuccessCount': TAG_Int(0, 'SuccessCount'),
+                            'TickDelay': TAG_Int(0, 'TickDelay'),
+                            'TrackOutput': TAG_Byte(1, 'TrackOutput'),
+                            'Version': TAG_Int(32, 'Version'),
+                            'auto': TAG_Byte(1, 'auto'),
+                            'conditionMet': TAG_Byte(0, 'conditionMet'),
+                            'conditionalMode': TAG_Byte(0, 'conditionalMode'),
+                            'id': TAG_String('CommandBlock', 'id'),
+                            'isMovable': TAG_Byte(1, 'isMovable'),
+                            'powered': TAG_Byte(0, 'powered'),
+                            'x': TAG_Int(0, 'x'),
+                            'y': TAG_Int(-55, 'y'),
+                            'z': TAG_Int(0, 'z')
+                        }
+                    },
+                    '6': {
+                        'block_entity_data': {
+                            'Command': TAG_String('', 'Command'),
+                            'CustomName': TAG_String('', 'CustomName'),
+                            'ExecuteOnFirstTick': TAG_Byte(1, 'ExecuteOnFirstTick'),
+                            'LPCommandMode': TAG_Int(0, 'LPCommandMode'),
+                            'LPCondionalMode': TAG_Byte(0, 'LPCondionalMode'),
+                            'LPRedstoneMode': TAG_Byte(0, 'LPRedstoneMode'),
+                            'LastExecution': TAG_Long(0, 'LastExecution'),
+                            'LastOutput': TAG_String('', 'LastOutput'),
+                            'LastOutputParams': [],
+                            'SuccessCount': TAG_Int(0, 'SuccessCount'),
+                            'TickDelay': TAG_Int(0, 'TickDelay'),
+                            'TrackOutput': TAG_Byte(1, 'TrackOutput'),
+                            'Version': TAG_Int(32, 'Version'),
+                            'auto': TAG_Byte(0, 'auto'),
+                            'conditionMet': TAG_Byte(0, 'conditionMet'),
+                            'conditionalMode': TAG_Byte(0, 'conditionalMode'),
+                            'id': TAG_String('CommandBlock', 'id'),
+                            'isMovable': TAG_Byte(1, 'isMovable'),
+                            'powered': TAG_Byte(0, 'powered'),
+                            'x': TAG_Int(0, 'x'),
+                            'y': TAG_Int(-54, 'y'),
+                            'z': TAG_Int(0, 'z')
+                        }
+                    },
+                    '7': {
+                        'block_entity_data': {
+                            'Command': TAG_String('', 'Command'),
+                            'CustomName': TAG_String('', 'CustomName'),
+                            'ExecuteOnFirstTick': TAG_Byte(1, 'ExecuteOnFirstTick'),
+                            'LPCommandMode': TAG_Int(0, 'LPCommandMode'),
+                            'LPCondionalMode': TAG_Byte(0, 'LPCondionalMode'),
+                            'LPRedstoneMode': TAG_Byte(0, 'LPRedstoneMode'),
+                            'LastExecution': TAG_Long(0, 'LastExecution'),
+                            'LastOutput': TAG_String('', 'LastOutput'),
+                            'LastOutputParams': [],
+                            'SuccessCount': TAG_Int(0, 'SuccessCount'),
+                            'TickDelay': TAG_Int(0, 'TickDelay'),
+                            'TrackOutput': TAG_Byte(1, 'TrackOutput'),
+                            'Version': TAG_Int(32, 'Version'),
+                            'auto': TAG_Byte(1, 'auto'),
+                            'conditionMet': TAG_Byte(0, 'conditionMet'),
+                            'conditionalMode': TAG_Byte(1, 'conditionalMode'),
+                            'id': TAG_String('CommandBlock', 'id'),
+                            'isMovable': TAG_Byte(1, 'isMovable'),
+                            'powered': TAG_Byte(0, 'powered'),
+                            'x': TAG_Int(0, 'x'),
+                            'y': TAG_Int(-53, 'y'),
+                            'z': TAG_Int(0, 'z')
+                        },
+                        'tick_queue_data': [{'tick_delay': TAG_Int(0, 'tick_delay')}]
+                    },
+                    '8': {
+                        'block_entity_data': {
+                            'Command': TAG_String('', 'Command'),
+                            'CustomName': TAG_String('', 'CustomName'),
+                            'ExecuteOnFirstTick': TAG_Byte(1, 'ExecuteOnFirstTick'),
+                            'LPCommandMode': TAG_Int(0, 'LPCommandMode'),
+                            'LPCondionalMode': TAG_Byte(0, 'LPCondionalMode'),
+                            'LPRedstoneMode': TAG_Byte(0, 'LPRedstoneMode'),
+                            'LastExecution': TAG_Long(0, 'LastExecution'),
+                            'LastOutput': TAG_String('', 'LastOutput'),
+                            'LastOutputParams': [],
+                            'SuccessCount': TAG_Int(0, 'SuccessCount'),
+                            'TickDelay': TAG_Int(0, 'TickDelay'),
+                            'TrackOutput': TAG_Byte(1, 'TrackOutput'),
+                            'Version': TAG_Int(32, 'Version'),
+                            'auto': TAG_Byte(1, 'auto'),
+                            'conditionMet': TAG_Byte(1, 'conditionMet'),
+                            'conditionalMode': TAG_Byte(0, 'conditionalMode'),
+                            'id': TAG_String('CommandBlock', 'id'),
+                            'isMovable': TAG_Byte(1, 'isMovable'),
+                            'powered': TAG_Byte(0, 'powered'),
+                            'x': TAG_Int(0, 'x'),
+                            'y': TAG_Int(-52, 'y'),
+                            'z': TAG_Int(0, 'z')
+                        },
+                        'tick_queue_data': [{'tick_delay': TAG_Int(0, 'tick_delay')}]
+                    }
+                }
+            }
+        }
+    },
+    'structure_world_origin': [TAG_Int(0, None), TAG_Int(-60, None), TAG_Int(0, None)]
 }
 ```
