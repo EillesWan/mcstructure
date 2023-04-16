@@ -6,7 +6,7 @@ struct = Structure(
 )
 
 # fill blocks  填充方块
-struct.set_blocks((1,1,1),(4,1,4),Block.from_identifier("minecraft:iron_block"))
+struct.fill_blocks((1,1,1),(4,1,4),Block.from_identifier("minecraft:iron_block"))
 
 # display stuffs in it  显示一些东西
 print(struct.get_structure())

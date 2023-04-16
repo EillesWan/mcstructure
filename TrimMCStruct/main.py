@@ -130,12 +130,12 @@ class Block:
     extra_data: dict[str, Union[int, str, bool]]
 
     def __init__(
-            self,
-            namespace: str,
-            base_name: str,
-            states: dict[str, Union[int, str, bool]] = {},
-            extra_data: dict[str, Union[int, str, bool]] = {},
-            compability_version: int = COMPABILITY_VERSION,
+        self,
+        namespace: str,
+        base_name: str,
+        states: dict[str, Union[int, str, bool]] = {},
+        extra_data: dict[str, Union[int, str, bool]] = {},
+        compability_version: int = COMPABILITY_VERSION,
     ):
         """
         Parameters
@@ -163,10 +163,10 @@ class Block:
 
     @classmethod
     def from_identifier(
-            cls,
-            identifier: str,
-            compability_version=COMPABILITY_VERSION,
-            **states: Union[int, str, bool],
+        cls,
+        identifier: str,
+        compability_version=COMPABILITY_VERSION,
+        **states: Union[int, str, bool],
     ):
         """
         Parameters
@@ -201,14 +201,14 @@ class Block:
         return self.dictionarify()
 
     def add_states(
-            self,
-            states: dict[str, Union[int, str, bool]],
+        self,
+        states: dict[str, Union[int, str, bool]],
     ) -> None:
         self.states.update(states)
 
     def add_extra_data(
-            self,
-            extra_data: dict[str, Union[int, str, bool]],
+        self,
+        extra_data: dict[str, Union[int, str, bool]],
     ) -> None:
         self.extra_data.update(extra_data)
 
@@ -222,7 +222,7 @@ class Block:
         return result
 
     def dictionarify_with_block_entity(
-            self, *, with_states: bool = True
+        self, *, with_states: bool = True
     ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
         result = {
             "name": self.identifier,
@@ -233,10 +233,10 @@ class Block:
         return result, self.extra_data
 
     def stringify(
-            self,
-            *,
-            with_namespace: bool = True,
-            with_states: bool = True,
+        self,
+        *,
+        with_namespace: bool = True,
+        with_states: bool = True,
     ) -> str:
         result = ""
         if with_namespace:
@@ -277,6 +277,28 @@ class Block:
         """
         return self.get_identifier()
 
+    def __eq__(self, obj: Block) -> bool:
+
+        if isinstance(obj, Block):
+            if self.dictionarify() == obj.dictionarify():
+                return True
+
+        return False
+
+    def copy(self) -> Block:
+        return Block(
+            namespace=self.namespace,
+            base_name=self.base_name,
+            states=self.states,
+            extra_data=self.extra_data,
+            compability_version=self.compability_version,
+        )
+
+    def clear_extra_data(self) -> Block:
+        another_self = self.copy()
+        another_self.extra_data = {}
+        return another_self
+
 
 class Structure:
     """
@@ -292,10 +314,10 @@ class Structure:
     structure_indecis: NDArray[np.intc]
 
     def __init__(
-            self,
-            size: tuple[int, int, int],
-            fill: Optional[Block] = None,
-            compability_version: int = COMPABILITY_VERSION,
+        self,
+        size: tuple[int, int, int],
+        fill: Optional[Block] = None,
+        compability_version: int = COMPABILITY_VERSION,
     ):
         """
         Parameters
@@ -312,11 +334,12 @@ class Structure:
 
             "minecraft:air" is used as default.
         """
+
         self.structure_indecis: NDArray[np.intc]
 
         self._size = size
         self._palette: list[Block] = []
-        self._special_block_indices: list[int] = []
+        self._special_blocks: Dict[int, Dict] = {}
 
         if fill is None:
             self.structure_indecis = np.full(size, -1, dtype=np.intc)
@@ -366,10 +389,10 @@ class Structure:
         for block_index, block_eneity_data in nbt["structure"]["palette"]["default"][
             "block_position_data"
         ].items():
-            struct._palette[int(block_index)].add_extra_data(
-                _into_pyobj(block_eneity_data)
-            )
-            struct._special_block_indices.append(int(block_index))
+            # struct._palette[int(block_index)].add_extra_data(
+            #     _into_pyobj(block_eneity_data)
+            # )
+            struct._special_blocks[int(block_index)] = _into_pyobj(block_eneity_data)
 
         return struct
 
@@ -384,7 +407,7 @@ class Structure:
         return str(self._get_str_array())
 
     def _get_str_array(
-            self, *, with_namespace: bool = False, with_states: bool = False
+        self, *, with_namespace: bool = False, with_states: bool = False
     ) -> NDArray[Any]:
         """
         Returns a numpy array where each entry is a
@@ -424,29 +447,12 @@ class Structure:
         if block is None:
             return -1
 
-        if block in self._palette:
-            return self._palette.index(block)
+        same_block = block.clear_extra_data()
+        if same_block in self._palette:
+            return self._palette.index(same_block)
 
-        self._palette.append(block)
+        self._palette.append(same_block)
         return len(self._palette) - 1
-
-    def get_structure(self) -> NDArray[Any]:
-        """
-        Returns the structure as a numpy array filled
-        with the corresponding `Block` objects.
-        """
-        arr = np.full(
-            self.structure_indecis.shape,
-            Block(
-                "minecraft",
-                "structure_void",
-                compability_version=self.compability_version,
-            ),
-            dtype=object,
-        )
-        for key, block in enumerate(self._palette):
-            arr[self.structure_indecis == key] = block
-        return arr
 
     def dump(self, file: BinaryIO) -> None:
         """
@@ -513,12 +519,10 @@ class Structure:
                                                     (
                                                         str(block_index),
                                                         _into_tag(
-                                                            self._palette[
-                                                                block_index
-                                                            ].extra_data
+                                                            extra_data
                                                         ),
                                                     )
-                                                    for block_index in self._special_block_indices
+                                                    for block_index, extra_data in self._special_blocks.items()
                                                 ]
                                             )
                                         ),
@@ -582,12 +586,42 @@ class Structure:
             The coordinte of the block.
         """
         x, y, z = coordinate
-        return self._palette[self.structure_indecis[x, y, z]]
+        block = self._palette[self.structure_indecis[x, y, z]].copy()
+        block_index = x * self.size[2] * self.size[1] + y * self.size[2] + z
+        if block_index in self._special_blocks.keys():
+            block.add_extra_data(self._special_blocks[block_index])
+        return block
+
+    def get_structure(self) -> NDArray[Any]:
+        """
+        Returns the structure as a numpy array filled
+        with the corresponding `Block` objects.
+        """
+        arr = np.full(
+            self.structure_indecis.shape,
+            Block(
+                "minecraft",
+                "structure_void",
+                compability_version=self.compability_version,
+            ),
+            dtype=object,
+        )
+        for key, block in enumerate(self._palette):
+            arr[self.structure_indecis == key] = block
+
+        for index, exdata in self._special_blocks.items():
+            arr[int(index / (self.size[2] * self.size[1]))][
+                int(index % (self.size[2] * self.size[1]) / self.size[2])
+            ][
+                (index % (self.size[2] * self.size[1]) % self.size[2])
+            ].extra_data = exdata
+
+        return arr
 
     def set_block(
-            self,
-            coordinate: Coordinate,
-            block: Optional[Block],
+        self,
+        coordinate: Coordinate,
+        block: Optional[Block],
     ) -> Structure:
         """
         Puts a block into the structure.
@@ -605,16 +639,20 @@ class Structure:
 
         ident = self._add_block_to_palette(block)
         if block.extra_data:
-            self._special_block_indices.append(ident)
+            self._special_blocks.append(ident)
 
         self.structure_indecis[x, y, z] = ident
+        if block.extra_data:
+            self._special_blocks[
+                x * self.size[2] * self.size[1] + y * self.size[2] + z
+            ] = block.extra_data
         return self
 
     def fill_blocks(
-            self,
-            from_coordinate: Coordinate,
-            to_coordinate: Coordinate,
-            block: Block,
+        self,
+        from_coordinate: Coordinate,
+        to_coordinate: Coordinate,
+        block: Block,
     ) -> Structure:
         """
         Puts multiple blocks into the structure.
@@ -640,9 +678,9 @@ class Structure:
 
         ident = self._add_block_to_palette(block)
         if block.extra_data:
-            self._special_block_indices.append(ident)
+            self._special_blocks.append(ident)
         # print([[[ident for k in range(abs(fz-tz)+1) ]for j in range(abs(fy-ty)+1)]for i in range(abs(fx-tx)+1)])
-        self.structure_indecis[fx: tx + 1, fy: ty + 1, fz: tz + 1] = np.array(
+        self.structure_indecis[fx : tx + 1, fy : ty + 1, fz : tz + 1] = np.array(
             [
                 [
                     [ident for k in range(abs(fz - tz) + 1)]
@@ -652,4 +690,26 @@ class Structure:
             ],
             dtype=np.intc,
         ).reshape([abs(i) + 1 for i in (fx - tx, fy - ty, fz - tz)])
+
+        if block.extra_data:
+            self._special_blocks.update(
+                dict(
+                    zip(
+                        [
+                            (x * self.size[2] * self.size[1] + y * self.size[2] + z)
+                            for x in range(fx, tx)
+                            for y in range(fy, ty)
+                            for z in range(fz, tz)
+                        ],
+                        [
+                            block.extra_data
+                            for i in range(
+                                abs((fz - tz) + 1)
+                                * (abs(fy - ty) + 1)
+                                * (abs(fx - tx) + 1)
+                            )
+                        ],
+                    )
+                )
+            )
         return self
