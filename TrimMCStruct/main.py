@@ -638,8 +638,6 @@ class Structure:
         x, y, z = coordinate
 
         ident = self._add_block_to_palette(block)
-        if block.extra_data:
-            self._special_blocks.append(ident)
 
         self.structure_indecis[x, y, z] = ident
         if block.extra_data:
@@ -677,8 +675,7 @@ class Structure:
         tx, ty, tz = to_coordinate
 
         ident = self._add_block_to_palette(block)
-        if block.extra_data:
-            self._special_blocks.append(ident)
+        
         # print([[[ident for k in range(abs(fz-tz)+1) ]for j in range(abs(fy-ty)+1)]for i in range(abs(fx-tx)+1)])
         self.structure_indecis[fx : tx + 1, fy : ty + 1, fz : tz + 1] = np.array(
             [
