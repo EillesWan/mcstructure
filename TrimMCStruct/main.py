@@ -20,7 +20,7 @@ from typing import Any, BinaryIO, Optional, Tuple, Union, Dict
 
 import numpy as np
 from numpy.typing import NDArray
-from pynbt import BaseTag, NBTFile, TAG_Compound, TAG_Int, TAG_List, TAG_String, TAG_Byte  # type: ignore
+from pynbt import BaseTag, NBTFile, TAG_Compound, TAG_Int, TAG_List, TAG_String, TAG_Byte, TAG_Long, TAG_Short  # type: ignore
 
 Coordinate = Tuple[int, int, int]
 
