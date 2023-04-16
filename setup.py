@@ -31,8 +31,5 @@ setuptools.setup(
         "Programming Language :: Python :: 3.10",
     ],
     # 需要安装的依赖
-    install_requires=[
-        "numpy>=1.21",
-        "pynbt>=2",
-    ],
+    install_requires=open("requirements.txt",'r',encoding='utf-8').read().strip().split("\n"),
 )
