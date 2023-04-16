@@ -203,7 +203,7 @@
    END OF TERMS AND CONDITIONS
 
 
-   Copyright 2022 Team-Ryoun 金羿("Eilles Wan") & 诸葛亮与八卦阵("bgArray")
+   Copyright 2023 金羿("Eilles Wan") & 诸葛亮与八卦阵("bgArray") & The-phoenixR & Happy2018new("Eternal Crystal")
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
