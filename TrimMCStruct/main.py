@@ -76,6 +76,9 @@ def _into_tag(obj: Any) -> BaseTag:
             tag_type=(type(_into_tag(obj[0])) if obj else TAG_String), value=res
         )
 
+    elif isinstance(obj, bool):
+        return TAG_Byte(obj)
+
     elif isinstance(obj, int):
         return TAG_Int(obj)
 
@@ -278,7 +281,6 @@ class Block:
         return self.get_identifier()
 
     def __eq__(self, obj: Block) -> bool:
-
         if isinstance(obj, Block):
             if self.dictionarify() == obj.dictionarify():
                 return True
@@ -386,13 +388,10 @@ class Structure:
             ]
         )
 
-        for block_index, block_eneity_data in nbt["structure"]["palette"]["default"][
+        for block_index, block_extra_data in nbt["structure"]["palette"]["default"][
             "block_position_data"
         ].items():
-            # struct._palette[int(block_index)].add_extra_data(
-            #     _into_pyobj(block_eneity_data)
-            # )
-            struct._special_blocks[int(block_index)] = _into_pyobj(block_eneity_data)
+            struct._special_blocks[int(block_index)] = _into_pyobj(block_extra_data)
 
         return struct
 
@@ -515,15 +514,16 @@ class Structure:
                                         ),
                                         block_position_data=TAG_Compound(
                                             dict(
-                                                [
-                                                    (
-                                                        str(block_index),
-                                                        _into_tag(
-                                                            extra_data
-                                                        ),
-                                                    )
-                                                    for block_index, extra_data in self._special_blocks.items()
-                                                ]
+                                                sorted(
+                                                    [
+                                                        (
+                                                            str(block_index),
+                                                            _into_tag(extra_data),
+                                                        )
+                                                        for block_index, extra_data in self._special_blocks.items()
+                                                    ],
+                                                    key=lambda a: a[0],
+                                                )
                                             )
                                         ),
                                     )
@@ -675,7 +675,7 @@ class Structure:
         tx, ty, tz = to_coordinate
 
         ident = self._add_block_to_palette(block)
-        
+
         # print([[[ident for k in range(abs(fz-tz)+1) ]for j in range(abs(fy-ty)+1)]for i in range(abs(fx-tx)+1)])
         self.structure_indecis[fx : tx + 1, fy : ty + 1, fz : tz + 1] = np.array(
             [
