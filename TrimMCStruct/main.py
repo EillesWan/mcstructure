@@ -168,7 +168,7 @@ class Block:
     def from_identifier(
         cls,
         identifier: str,
-        compability_version: int=COMPABILITY_VERSION,
+        compability_version: int = COMPABILITY_VERSION,
         **states: Union[int, str, bool],
     ):
         """
@@ -179,8 +179,8 @@ class Block:
 
         compability_version: int
             [Optional] The compability version of the block, now(1.19) is 17959425
-        
-        states: 
+
+        states:
             The block states such as "color" or "stone_type".
             This varies by every block.
         """
@@ -331,10 +331,12 @@ class Structure:
             Fill the structure with this block at
             creation of a new structure object.
 
+            However, extra datas of blocks cannot be filled.
+
             If this is set to ``None`` the structure
             is filled with "Structure Void" blocks.
 
-            "minecraft:air" is used as default.
+            "None" is used as default.
         """
 
         self.structure_indecis: NDArray[np.intc]
