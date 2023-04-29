@@ -143,9 +143,9 @@ class Block:
         """
         Parameters
         ----------
-        namespace
+        namespace: str
             The namespace of the block (e.g. "minecraft").
-        base_name
+        base_name: str
             The name of the block (e.g. "air").
 
         states
@@ -155,7 +155,7 @@ class Block:
         extra_data
             [Optional] The additional data of the block.
 
-        compability_version
+        compability_version: int
             [Optional] The compability version of the block, now(1.19) is 17959425
         """
         self.namespace = namespace
@@ -168,21 +168,21 @@ class Block:
     def from_identifier(
         cls,
         identifier: str,
-        compability_version=COMPABILITY_VERSION,
+        compability_version: int=COMPABILITY_VERSION,
         **states: Union[int, str, bool],
     ):
         """
         Parameters
         ----------
-        identifier
+        identifier: str
             The identifier of the block (e.g. "minecraft:wool").
 
-        states
+        compability_version: int
+            [Optional] The compability version of the block, now(1.19) is 17959425
+        
+        states: 
             The block states such as "color" or "stone_type".
             This varies by every block.
-
-        compability_version
-            It's not written here.
         """
 
         if ":" in identifier:
