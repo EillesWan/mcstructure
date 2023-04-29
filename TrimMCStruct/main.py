@@ -20,7 +20,8 @@ from typing import Any, BinaryIO, Optional, Tuple, Union, Dict
 
 import numpy as np
 from numpy.typing import NDArray
-from pynbt import BaseTag, NBTFile, TAG_Compound, TAG_Int, TAG_List, TAG_String, TAG_Byte, TAG_Long, TAG_Short  # type: ignore
+from pynbt import BaseTag, NBTFile, TAG_Compound, TAG_Int, TAG_List, TAG_String, TAG_Byte, TAG_Long, \
+    TAG_Short  # type: ignore
 
 Coordinate = Tuple[int, int, int]
 
@@ -130,12 +131,12 @@ class Block:
     extra_data: dict[str, Union[int, str, bool]]
 
     def __init__(
-        self,
-        namespace: str,
-        base_name: str,
-        states: dict[str, Union[int, str, bool]] = {},
-        extra_data: dict[str, Union[int, str, bool]] = {},
-        compability_version: int = COMPABILITY_VERSION,
+            self,
+            namespace: str,
+            base_name: str,
+            states: dict[str, Union[int, str, bool]] = {},
+            extra_data: dict[str, Union[int, str, bool]] = {},
+            compability_version: int = COMPABILITY_VERSION,
     ):
         """
         Parameters
@@ -163,10 +164,10 @@ class Block:
 
     @classmethod
     def from_identifier(
-        cls,
-        identifier: str,
-        compability_version=COMPABILITY_VERSION,
-        **states: Union[int, str, bool],
+            cls,
+            identifier: str,
+            compability_version=COMPABILITY_VERSION,
+            **states: Union[int, str, bool],
     ):
         """
         Parameters
@@ -201,14 +202,14 @@ class Block:
         return self.dictionarify()
 
     def add_states(
-        self,
-        states: dict[str, Union[int, str, bool]],
+            self,
+            states: dict[str, Union[int, str, bool]],
     ) -> None:
         self.states.update(states)
 
     def add_extra_data(
-        self,
-        extra_data: dict[str, Union[int, str, bool]],
+            self,
+            extra_data: dict[str, Union[int, str, bool]],
     ) -> None:
         self.extra_data.update(extra_data)
 
@@ -222,7 +223,7 @@ class Block:
         return result
 
     def dictionarify_with_block_entity(
-        self, *, with_states: bool = True
+            self, *, with_states: bool = True
     ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
         result = {
             "name": self.identifier,
@@ -233,10 +234,10 @@ class Block:
         return result, self.extra_data
 
     def stringify(
-        self,
-        *,
-        with_namespace: bool = True,
-        with_states: bool = True,
+            self,
+            *,
+            with_namespace: bool = True,
+            with_states: bool = True,
     ) -> str:
         result = ""
         if with_namespace:
@@ -314,10 +315,10 @@ class Structure:
     structure_indecis: NDArray[np.intc]
 
     def __init__(
-        self,
-        size: tuple[int, int, int],
-        fill: Optional[Block] = None,
-        compability_version: int = COMPABILITY_VERSION,
+            self,
+            size: tuple[int, int, int],
+            fill: Optional[Block] = None,
+            compability_version: int = COMPABILITY_VERSION,
     ):
         """
         Parameters
@@ -407,7 +408,7 @@ class Structure:
         return str(self._get_str_array())
 
     def _get_str_array(
-        self, *, with_namespace: bool = False, with_states: bool = False
+            self, *, with_namespace: bool = False, with_states: bool = False
     ) -> NDArray[Any]:
         """
         Returns a numpy array where each entry is a
@@ -619,9 +620,9 @@ class Structure:
         return arr
 
     def set_block(
-        self,
-        coordinate: Coordinate,
-        block: Optional[Block],
+            self,
+            coordinate: Coordinate,
+            block: Optional[Block],
     ) -> Structure:
         """
         Puts a block into the structure.
@@ -643,14 +644,14 @@ class Structure:
         if block.extra_data:
             self._special_blocks[
                 x * self.size[2] * self.size[1] + y * self.size[2] + z
-            ] = block.extra_data
+                ] = block.extra_data
         return self
 
     def fill_blocks(
-        self,
-        from_coordinate: Coordinate,
-        to_coordinate: Coordinate,
-        block: Block,
+            self,
+            from_coordinate: Coordinate,
+            to_coordinate: Coordinate,
+            block: Block,
     ) -> Structure:
         """
         Puts multiple blocks into the structure.
@@ -675,9 +676,9 @@ class Structure:
         tx, ty, tz = to_coordinate
 
         ident = self._add_block_to_palette(block)
-        
+
         # print([[[ident for k in range(abs(fz-tz)+1) ]for j in range(abs(fy-ty)+1)]for i in range(abs(fx-tx)+1)])
-        self.structure_indecis[fx : tx + 1, fy : ty + 1, fz : tz + 1] = np.array(
+        self.structure_indecis[fx: tx + 1, fy: ty + 1, fz: tz + 1] = np.array(
             [
                 [
                     [ident for k in range(abs(fz - tz) + 1)]
@@ -701,10 +702,10 @@ class Structure:
                         [
                             block.extra_data
                             for i in range(
-                                abs((fz - tz) + 1)
-                                * (abs(fy - ty) + 1)
-                                * (abs(fx - tx) + 1)
-                            )
+                            abs((fz - tz) + 1)
+                            * (abs(fy - ty) + 1)
+                            * (abs(fx - tx) + 1)
+                        )
                         ],
                     )
                 )

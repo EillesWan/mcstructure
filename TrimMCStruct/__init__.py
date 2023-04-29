@@ -11,7 +11,7 @@ Terms & Conditions: ../LICENSE.md
 
 """
 
-__version__ = "0.0.5.5"
+__version__ = "0.0.5.6"
 __author__ = (("金羿", "Eilles Wan"), ("诸葛亮与八卦阵", "bgArray"), ("phoenixR", "phoenixR"))
 
 from .main import *
