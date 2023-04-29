@@ -11,7 +11,7 @@ Terms & Conditions: ../LICENSE.md
 
 """
 
-__version__ = "0.0.5.7.1"
+__version__ = "0.0.5.8"
 __author__ = (
     ("phoenixR", "phoenixR"),
     ("金羿", "Eilles Wan"),
