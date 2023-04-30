@@ -7,13 +7,16 @@ with open("README.MD", "r", encoding="utf-8") as fh:
         "./docs/", "https://github.com/TriM-Organization/TrimMCStruct/blob/master/docs/"
     )
 
+with open("requirements.txt", "r", encoding="utf-8") as fh:
+    dependences = fh.read().strip().split("\n")
+
 setuptools.setup(
     name="TrimMCStruct",
     version=TrimMCStruct.__version__,
     author="Eilles Wan, bgArray, phoenixr-codes(original author) ",
     author_email="TriM-Organization@hotmail.com",
     description="读写操作《我的世界》.MCSTRUCTURE文件\n"
-    "Read and write Minecraft .mcstructure files.",
+                "Read and write Minecraft .mcstructure files.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/TriM-Organization/TrimMCStruct",
@@ -31,5 +34,5 @@ setuptools.setup(
         "Programming Language :: Python :: 3.10",
     ],
     # 需要安装的依赖
-    install_requires=open("requirements.txt",'r',encoding='utf-8').read().strip().split("\n"),
+    install_requires=dependences,
 )
