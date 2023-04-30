@@ -309,7 +309,7 @@ class Structure:
 
     Attributes
     ----------
-    _size
+    size
         The size of the structure.
     """
 
@@ -464,7 +464,7 @@ class Structure:
         file
             File object to write to.
         """
-        nbt = NBTFile(
+        NBTFile(
             value=dict(
                 format_version=TAG_Int(1),
                 size=TAG_List(TAG_Int, map(TAG_Int, self._size)),
@@ -537,8 +537,7 @@ class Structure:
                 structure_world_origin=TAG_List(TAG_Int, [0, 0, 0]),
             ),
             little_endian=True,
-        )
-        nbt.save(file, little_endian=True)
+        ).save(file, little_endian=True)
 
     def mirror(self, axis: str) -> Structure:
         """
