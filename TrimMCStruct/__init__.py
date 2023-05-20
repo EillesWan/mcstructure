@@ -18,4 +18,4 @@ __author__ = (
     ("诸葛亮与八卦阵", "bgArray"),
 )
 
-from .main import *
+from .Class.structure import *

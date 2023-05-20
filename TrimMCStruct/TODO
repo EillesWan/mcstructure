@@ -1,0 +1,7 @@
+- [] coordinates might be in wrong order (XYZ -> ZYX)
+- [] make Structure._structure public
+- [] test mirror
+- [] test rotate
+- [] second layer (waterlogged blocks)
+- [] entities
+- [] export as 3d model (might be extension)

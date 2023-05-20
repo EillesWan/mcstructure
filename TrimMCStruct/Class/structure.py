@@ -1,305 +1,16 @@
-"""
-Read and write Minecraft .mcstructure files.
-"""
+from ..constant import Coordinate, COMPABILITY_VERSION
+from ..Utils.into_pyobj import _into_pyobj
+from ..Utils.into_tag import _into_tag
 
-# TODO: coordinates might be in wrong order (XYZ -> ZYX)
-# TODO: make Structure._structure public
-# TODO: test mirror
-# TODO: test rotate
-# TODO: second layer (waterlogged blocks)
-# TODO: entities
-# TODO: export as 3d model (might be extension)
+from .block import Block
 
-from __future__ import annotations
-
-from dataclasses import dataclass
 from functools import partial
 from itertools import repeat
-import json
-from typing import Any, BinaryIO, Optional, Tuple, Union, Dict
+from numpy.typing import NDArray
+from pynbt import NBTFile, TAG_Compound, TAG_Int, TAG_List, TAG_String
+from typing import Any, BinaryIO, Optional, Dict
 
 import numpy as np
-from numpy.typing import NDArray
-from pynbt import BaseTag, NBTFile, TAG_Compound, TAG_Int, TAG_List, TAG_String, TAG_Byte, TAG_Long, TAG_Short  # type: ignore
-
-Coordinate = Tuple[int, int, int]
-
-# Compatibility versioning number for blocks in 1.19.
-COMPABILITY_VERSION: int = 17959425
-
-
-def _into_pyobj(tag: BaseTag) -> Any:
-    """
-    Turns an NBT tree into a python tree.
-    """
-    if isinstance(tag, (TAG_Compound, dict)):
-        res = {}
-        for key, value in tag.items():
-            if isinstance(value, BaseTag):
-                value = _into_pyobj(value)
-            res[key] = value
-        return res
-
-    elif isinstance(tag, (TAG_List, list)):
-        res = []
-        for value in tag:
-            if isinstance(value, BaseTag):
-                value = _into_pyobj(value)
-            res.append(value)
-        return res
-
-    elif isinstance(tag, BaseTag):
-        return tag.value
-
-    return tag
-
-
-def _into_tag(obj: Any) -> BaseTag:
-    """
-    Turn a python tree into an NBT tree.
-    """
-    if isinstance(obj, (TAG_Compound, dict)):
-        res = {}
-        for key, value in obj.items():
-            if not isinstance(value, BaseTag):
-                value = _into_tag(value)
-            res[key] = value
-        return TAG_Compound(res)
-
-    elif isinstance(obj, (TAG_List, list)):
-        res = []
-        for value in obj:
-            if not isinstance(value, BaseTag):
-                value = _into_tag(value)
-            res.append(value)
-        return TAG_List(
-            tag_type=(type(_into_tag(obj[0])) if obj else TAG_String), value=res
-        )
-
-    elif isinstance(obj, bool):
-        return TAG_Byte(obj)
-
-    elif isinstance(obj, int):
-        return TAG_Int(obj)
-
-    elif isinstance(obj, str):
-        return TAG_String(obj)
-
-    return obj
-
-
-def is_valid_structure_name(name: str, *, with_prefix: bool = False) -> bool:
-    """
-    Validates the structure name.
-
-    .. seealso: https://minecraft.fandom.com/wiki/Structure_Block
-
-    Parameters
-    ----------
-    name
-        The name of the structure.
-
-    with_prefix
-        Whether to take the prefix (e.g. ``mystructure:``)
-        into account.
-    """
-    if with_prefix:
-        name = name.replace(":", "", 1)
-
-    return all((char.isalnum() and char in "-_") for char in name)
-
-
-@dataclass(init=False)
-class Block:
-    """
-    Attributes
-    ----------
-    base_name
-        The name of the block.
-
-    states
-        The states of the block.
-
-    Example
-    -------
-    .. code-block::
-
-        Block("minecraft:wool", color = "red")
-    """
-
-    namespace: str
-    base_name: str
-    states: dict[str, Union[int, str, bool]]
-    extra_data: dict[str, Union[int, str, bool]]
-
-    def __init__(
-        self,
-        namespace: str,
-        base_name: str,
-        states: dict[str, Union[int, str, bool]] = {},
-        extra_data: dict[str, Union[int, str, bool]] = {},
-        compability_version: int = COMPABILITY_VERSION,
-    ):
-        """
-        Parameters
-        ----------
-        namespace: str
-            The namespace of the block (e.g. "minecraft").
-        base_name: str
-            The name of the block (e.g. "air").
-
-        states
-            The block states such as {'color': 'white'} or {"stone_type":1}.
-            This varies by every block.
-
-        extra_data
-            [Optional] The additional data of the block.
-
-        compability_version: int
-            [Optional] The compability version of the block, now(1.19) is 17959425
-        """
-        self.namespace = namespace
-        self.base_name = base_name
-        self.states = states
-        self.extra_data = extra_data
-        self.compability_version = compability_version
-
-    @classmethod
-    def from_identifier(
-        cls,
-        identifier: str,
-        compability_version: int = COMPABILITY_VERSION,
-        **states: Union[int, str, bool],
-    ):
-        """
-        Parameters
-        ----------
-        identifier: str
-            The identifier of the block (e.g. "minecraft:wool").
-
-        compability_version: int
-            [Optional] The compability version of the block, now(1.19) is 17959425
-
-        states:
-            The block states such as "color" or "stone_type".
-            This varies by every block.
-        """
-
-        if ":" in identifier:
-            namespace, base_name = identifier.split(":", 1)
-        else:
-            namespace = "minecraft"
-            base_name = identifier
-
-        block = cls(
-            namespace, base_name, states, compability_version=compability_version
-        )
-
-        return block
-
-    def __str__(self) -> str:
-        return self.stringify()
-
-    def __dict__(self) -> dict:
-        return self.dictionarify()
-
-    def add_states(
-        self,
-        states: dict[str, Union[int, str, bool]],
-    ) -> None:
-        self.states.update(states)
-
-    def add_extra_data(
-        self,
-        extra_data: dict[str, Union[int, str, bool]],
-    ) -> None:
-        self.extra_data.update(extra_data)
-
-    def dictionarify(self, *, with_states: bool = True) -> Dict[str, Any]:
-        result = {
-            "name": self.identifier,
-            "states": self.states if with_states else {},
-            "version": self.compability_version,
-        }
-
-        return result
-
-    def dictionarify_with_block_entity(
-        self, *, with_states: bool = True
-    ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
-        result = {
-            "name": self.identifier,
-            "states": self.states if with_states else {},
-            "version": self.compability_version,
-        }
-
-        return result, self.extra_data
-
-    def stringify(
-        self,
-        *,
-        with_namespace: bool = True,
-        with_states: bool = True,
-    ) -> str:
-        result = ""
-        if with_namespace:
-            result += self.namespace + ":"
-        result += self.get_name()
-        if with_states:
-            result += f" [{json.dumps(self.states)[1:-1]}]"
-        return result
-
-    def get_namespace_and_name(self) -> tuple[str, str]:
-        """
-        Returns the namespace and the name of the block.
-        """
-        return self.namespace, self.base_name
-
-    def get_identifier(self) -> str:
-        """
-        Returns the identifier of the block.
-        """
-        return self.namespace + ":" + self.base_name
-
-    def get_name(self) -> str:
-        """
-        Returns the name of the block.
-        """
-        return self.base_name
-
-    def get_namespace(self) -> Optional[str]:
-        """
-        Returns the namespace of the block.
-        """
-        return self.namespace
-
-    @property
-    def identifier(self) -> str:
-        """
-        The identifier of the block.
-        """
-        return self.get_identifier()
-
-    def __eq__(self, obj: Block) -> bool:
-        if isinstance(obj, Block):
-            if self.dictionarify() == obj.dictionarify():
-                return True
-
-        return False
-
-    def copy(self) -> Block:
-        return Block(
-            namespace=self.namespace,
-            base_name=self.base_name,
-            states=self.states,
-            extra_data=self.extra_data,
-            compability_version=self.compability_version,
-        )
-
-    def clear_extra_data(self) -> Block:
-        another_self = self.copy()
-        another_self.extra_data = {}
-        return another_self
 
 
 class Structure:
@@ -365,7 +76,8 @@ class Structure:
             File object to read.
         """
         nbt = NBTFile(file, little_endian=True)
-        size: tuple[int, int, int] = tuple(x.value for x in nbt["size"])  # type: ignore
+        size: tuple[int, int, int] = tuple(
+            x.value for x in nbt["size"])
 
         struct = cls(size)
 
@@ -393,7 +105,8 @@ class Structure:
         for block_index, block_extra_data in nbt["structure"]["palette"]["default"][
             "block_position_data"
         ].items():
-            struct._special_blocks[int(block_index)] = _into_pyobj(block_extra_data)
+            struct._special_blocks[int(block_index)] = _into_pyobj(
+                block_extra_data)
 
         return struct
 
@@ -480,7 +193,8 @@ class Structure:
                                 TAG_List(
                                     TAG_Int,
                                     map(
-                                        TAG_Int, repeat(-1, self.structure_indecis.size)
+                                        TAG_Int, repeat(-1,
+                                                        self.structure_indecis.size)
                                     ),
                                 ),
                             ],
@@ -520,7 +234,8 @@ class Structure:
                                                     [
                                                         (
                                                             str(block_index),
-                                                            _into_tag(extra_data),
+                                                            _into_tag(
+                                                                extra_data),
                                                         )
                                                         for block_index, extra_data in self._special_blocks.items()
                                                     ],
@@ -539,7 +254,7 @@ class Structure:
             little_endian=True,
         ).save(file, little_endian=True)
 
-    def mirror(self, axis: str) -> Structure:
+    def mirror(self, axis: str):
         """
         Flips the structure.
 
@@ -557,7 +272,7 @@ class Structure:
             raise ValueError(f"invalid argument for 'rotation' ({axis!r})")
         return self
 
-    def rotate(self, by: int) -> Structure:
+    def rotate(self, by: int):
         """
         Rotates the structure.
 
@@ -568,11 +283,14 @@ class Structure:
             or ``270`` degrees.
         """
         if by == 90:
-            self.structure_indecis = np.rot90(self.structure_indecis, k=1, axes=(0, 1))
+            self.structure_indecis = np.rot90(
+                self.structure_indecis, k=1, axes=(0, 1))
         elif by == 180:
-            self.structure_indecis = np.rot90(self.structure_indecis, k=2, axes=(0, 1))
+            self.structure_indecis = np.rot90(
+                self.structure_indecis, k=2, axes=(0, 1))
         elif by == 270:
-            self.structure_indecis = np.rot90(self.structure_indecis, k=3, axes=(0, 1))
+            self.structure_indecis = np.rot90(
+                self.structure_indecis, k=3, axes=(0, 1))
         else:
             raise ValueError(f"invalid argument for 'by' ({by!r})")
         return self
@@ -623,7 +341,7 @@ class Structure:
         self,
         coordinate: Coordinate,
         block: Optional[Block],
-    ) -> Structure:
+    ):
         """
         Puts a block into the structure.
 
@@ -641,10 +359,10 @@ class Structure:
         ident = self._add_block_to_palette(block)
 
         self.structure_indecis[x, y, z] = ident
-        if block.extra_data:
+        if block.extra_data:  # type: ignore
             self._special_blocks[
                 x * self.size[2] * self.size[1] + y * self.size[2] + z
-            ] = block.extra_data
+            ] = block.extra_data  # type: ignore
         return self
 
     def fill_blocks(
@@ -652,7 +370,7 @@ class Structure:
         from_coordinate: Coordinate,
         to_coordinate: Coordinate,
         block: Block,
-    ) -> Structure:
+    ):
         """
         Puts multiple blocks into the structure.
 
@@ -678,7 +396,7 @@ class Structure:
         ident = self._add_block_to_palette(block)
 
         # print([[[ident for k in range(abs(fz-tz)+1) ]for j in range(abs(fy-ty)+1)]for i in range(abs(fx-tx)+1)])
-        self.structure_indecis[fx : tx + 1, fy : ty + 1, fz : tz + 1] = np.array(
+        self.structure_indecis[fx: tx + 1, fy: ty + 1, fz: tz + 1] = np.array(
             [
                 [
                     [ident for k in range(abs(fz - tz) + 1)]
@@ -694,7 +412,8 @@ class Structure:
                 dict(
                     zip(
                         [
-                            (x * self.size[2] * self.size[1] + y * self.size[2] + z)
+                            (x * self.size[2] * self.size[1] +
+                             y * self.size[2] + z)
                             for x in range(fx, tx)
                             for y in range(fy, ty)
                             for z in range(fz, tz)
