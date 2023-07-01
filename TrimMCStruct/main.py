@@ -129,8 +129,8 @@ class Block:
 
     namespace: str
     base_name: str
-    states: dict[str, Union[int, str, bool]]
-    extra_data: dict[str, Union[int, str, bool]]
+    states: dict[str, Any]
+    extra_data: dict[str, Any]
 
     def __init__(
         self,
@@ -641,17 +641,18 @@ class Structure:
         ident = self._add_block_to_palette(block)
 
         self.structure_indecis[x, y, z] = ident
-        if block.extra_data:
-            self._special_blocks[
-                x * self.size[2] * self.size[1] + y * self.size[2] + z
-            ] = block.extra_data
+        if block:
+            if block.extra_data:
+                self._special_blocks[
+                    x * self.size[2] * self.size[1] + y * self.size[2] + z
+                ] = block.extra_data
         return self
 
     def fill_blocks(
         self,
         from_coordinate: Coordinate,
         to_coordinate: Coordinate,
-        block: Block,
+        block: Optional[Block],
     ) -> Structure:
         """
         Puts multiple blocks into the structure.
@@ -689,25 +690,26 @@ class Structure:
             dtype=np.intc,
         ).reshape([abs(i) + 1 for i in (fx - tx, fy - ty, fz - tz)])
 
-        if block.extra_data:
-            self._special_blocks.update(
-                dict(
-                    zip(
-                        [
-                            (x * self.size[2] * self.size[1] + y * self.size[2] + z)
-                            for x in range(fx, tx)
-                            for y in range(fy, ty)
-                            for z in range(fz, tz)
-                        ],
-                        [
-                            block.extra_data
-                            for i in range(
-                                abs((fz - tz) + 1)
-                                * (abs(fy - ty) + 1)
-                                * (abs(fx - tx) + 1)
-                            )
-                        ],
+        if block:
+            if block.extra_data:
+                self._special_blocks.update(
+                    dict(
+                        zip(
+                            [
+                                (x * self.size[2] * self.size[1] + y * self.size[2] + z)
+                                for x in range(fx, tx)
+                                for y in range(fy, ty)
+                                for z in range(fz, tz)
+                            ],
+                            [
+                                block.extra_data
+                                for i in range(
+                                    abs((fz - tz) + 1)
+                                    * (abs(fy - ty) + 1)
+                                    * (abs(fx - tx) + 1)
+                                )
+                            ],
+                        )
                     )
                 )
-            )
         return self

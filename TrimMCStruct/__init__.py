@@ -11,11 +11,19 @@ Terms & Conditions: ../LICENSE.md
 
 """
 
-__version__ = "0.0.5.8"
+__version__ = "0.0.5.9"
 __author__ = (
     ("phoenixR", "phoenixR"),
     ("金羿", "Eilles Wan"),
     ("诸葛亮与八卦阵", "bgArray"),
 )
+__all__ = [
+    # main class
+    "Structure",
+    "Block",
+
+    # functions
+    "is_valid_structure_name",
+]
 
 from .main import *
