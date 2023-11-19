@@ -1,2 +1,1 @@
-numpy>=1.21
-pynbt>=2
+nblib>=2

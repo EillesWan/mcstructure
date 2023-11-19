@@ -16,74 +16,103 @@ from dataclasses import dataclass
 from functools import partial
 from itertools import repeat
 import json
-from typing import Any, BinaryIO, Optional, Tuple, Union, Dict
+from typing import Any, BinaryIO, Callable, Optional, Tuple, Union, Dict, AnyStr, List
 
 import numpy as np
 from numpy.typing import NDArray
-from pynbt import BaseTag, NBTFile, TAG_Compound, TAG_Int, TAG_List, TAG_String, TAG_Byte, TAG_Long, TAG_Short  # type: ignore
+import nbtlib
+
 
 Coordinate = Tuple[int, int, int]
 
 # Compatibility versioning number for blocks in 1.19.
-COMPABILITY_VERSION: int = 17959425
+COMPABILITY_VERSION: nbtlib.Int = nbtlib.Int(17959425)
 
 
-def _into_pyobj(tag: BaseTag) -> Any:
-    """
-    Turns an NBT tree into a python tree.
-    """
-    if isinstance(tag, (TAG_Compound, dict)):
-        res = {}
-        for key, value in tag.items():
-            if isinstance(value, BaseTag):
-                value = _into_pyobj(value)
-            res[key] = value
-        return res
+# def _into_pyobj(tag: nbt.Base) -> Any:
+#     """
+#     Turns an NBT tree into a python tree.
+#     """
+#     if isinstance(tag, (nbt.Compound, dict)):
+#         res = {}
+#         for key, value in tag.items():
+#             if isinstance(value, (nbt.Numeric, nbt.String)):
+#                 value = _into_pyobj(value)
+#             res[key] = value
+#         return res
 
-    elif isinstance(tag, (TAG_List, list)):
-        res = []
-        for value in tag:
-            if isinstance(value, BaseTag):
-                value = _into_pyobj(value)
-            res.append(value)
-        return res
+#     elif isinstance(tag, (nbt.List, list)):
+#         res = []
+#         for value in tag:
+#             if isinstance(value, (nbt.Numeric, nbt.String)):
+#                 value = _into_pyobj(value)
+#             res.append(value)
+#         return res
 
-    elif isinstance(tag, BaseTag):
-        return tag.value
+#     elif isinstance(tag, (nbt.Numeric, nbt.String)):
+#         return tag
 
-    return tag
+#     return tag
 
 
-def _into_tag(obj: Any) -> BaseTag:
+def _into_tag(
+    obj: Any,
+    sort_: Optional[Union[bool, Callable]] = False,
+    sort_order: Optional[bool] = False,
+) -> nbtlib.Base:
     """
     Turn a python tree into an NBT tree.
     """
-    if isinstance(obj, (TAG_Compound, dict)):
-        res = {}
-        for key, value in obj.items():
-            if not isinstance(value, BaseTag):
-                value = _into_tag(value)
-            res[key] = value
-        return TAG_Compound(res)
+    if isinstance(obj, (nbtlib.Compound, dict)):
+        res = [
+            (
+                nbtlib.String(key),
+                (
+                    value
+                    if isinstance(value, (nbtlib.Numeric, nbtlib.String))
+                    else _into_tag(value)
+                ),
+            )
+            for key, value in obj.items()
+        ]
 
-    elif isinstance(obj, (TAG_List, list)):
-        res = []
-        for value in obj:
-            if not isinstance(value, BaseTag):
-                value = _into_tag(value)
-            res.append(value)
-        return TAG_List(
-            tag_type=(type(_into_tag(obj[0])) if obj else TAG_String), value=res
+        return nbtlib.Compound(
+            res
+            if (sort_ is None) or (sort_ is False)
+            else sorted(
+                res,
+                key=(sort_ if isinstance(sort_, Callable) else None),
+                reverse=(sort_order if sort_order else False),
+            )
+        )
+
+    elif isinstance(obj, (nbtlib.List, list, tuple)):
+        res = [
+            (
+                value
+                if isinstance(value, (nbtlib.Numeric, nbtlib.String))
+                else _into_tag(value)
+            )
+            for value in obj
+        ]
+        return nbtlib.List(
+            res
+            if (sort_ is None) or (sort_ is False)
+            else sorted(
+                res,
+                key=(sort_ if isinstance(sort_, Callable) else None),  # type: ignore
+                reverse=(sort_order if sort_order else False),
+            )
         )
 
     elif isinstance(obj, bool):
-        return TAG_Byte(obj)
+        return nbtlib.Byte(obj)
 
     elif isinstance(obj, int):
-        return TAG_Int(obj)
+        return nbtlib.Int(obj)
 
     elif isinstance(obj, str):
-        return TAG_String(obj)
+        return nbtlib.String(obj)
 
     return obj
 
@@ -136,8 +165,8 @@ class Block:
         self,
         namespace: str,
         base_name: str,
-        states: dict[str, Union[int, str, bool]] = {},
-        extra_data: dict[str, Union[int, str, bool]] = {},
+        states: Dict[str, Union[int, str, bool]] = {},
+        extra_data: Dict[str, Union[int, str, bool]] = {},
         compability_version: int = COMPABILITY_VERSION,
     ):
         """
@@ -342,11 +371,11 @@ class Structure:
         self.structure_indecis: NDArray[np.intc]
 
         self._size = size
-        self._palette: list[Block] = []
+        self._palette: List[Block] = []
         self._special_blocks: Dict[int, Dict] = {}
 
         if fill is None:
-            self.structure_indecis = np.full(size, -1, dtype=np.intc)
+            self.structure_indecis = np.full(size, nbtlib.Int(-1), dtype=np.intc)
 
         else:
             self.structure_indecis = np.zeros(size, dtype=np.intc)
@@ -355,7 +384,15 @@ class Structure:
         self.compability_version = compability_version
 
     @classmethod
-    def load(cls, file: BinaryIO):
+    def loadf(cls, file_path: AnyStr):
+        with open(
+            file_path,
+            "rb",
+        ) as f:
+            return cls.load(f)
+
+    @classmethod
+    def load(cls, file_: BinaryIO):
         """
         Loads an mcstructure file.
 
@@ -364,8 +401,8 @@ class Structure:
         file
             File object to read.
         """
-        nbt = NBTFile(file, little_endian=True)
-        size: tuple[int, int, int] = tuple(x.value for x in nbt["size"])  # type: ignore
+        nbt = nbtlib.File.from_fileobj(file_, byteorder="little")
+        size: tuple[int, int, int] = (nbt["size"][0], nbt["size"][1], nbt["size"][2])
 
         struct = cls(size)
 
@@ -375,16 +412,16 @@ class Structure:
         # ../docs/mcstructure%E6%96%87%E4%BB%B6%E7%BB%93%E6%9E%84.md
 
         struct.structure_indecis = np.array(
-            [_into_pyobj(x) for x in nbt["structure"]["block_indices"][0]],
+            nbt["structure"]["block_indices"][0],
             dtype=np.intc,
         ).reshape(size)
 
         struct._palette.extend(
             [
                 Block.from_identifier(
-                    block["name"].value,
-                    **_into_pyobj(block["states"].value),
-                    compability_version=_into_pyobj(block["version"]),
+                    block["name"],
+                    **block["states"],
+                    compability_version=block["version"],
                 )
                 for block in nbt["structure"]["palette"]["default"]["block_palette"]
             ]
@@ -393,7 +430,7 @@ class Structure:
         for block_index, block_extra_data in nbt["structure"]["palette"]["default"][
             "block_position_data"
         ].items():
-            struct._special_blocks[int(block_index)] = _into_pyobj(block_extra_data)
+            struct._special_blocks[int(block_index)] = block_extra_data
 
         return struct
 
@@ -455,89 +492,68 @@ class Structure:
         self._palette.append(same_block)
         return len(self._palette) - 1
 
-    def dump(self, file: BinaryIO) -> None:
+    def nbtfilize(
+        self,
+    ) -> nbtlib.File:
+        return nbtlib.File(
+            dict(
+                format_version=nbtlib.Int(1),
+                size=_into_tag(self._size),
+                structure=nbtlib.Compound(
+                    block_indices=nbtlib.List(
+                        [
+                            _into_tag(
+                                self.structure_indecis.flatten(),
+                            ),
+                            nbtlib.List(
+                                list(
+                                    repeat(nbtlib.Int(-1), self.structure_indecis.size),
+                                ),
+                            ),
+                        ],
+                    ),
+                    entities=nbtlib.List([]),
+                    palette=nbtlib.Compound(
+                        default=nbtlib.Compound(
+                            block_palette=nbtlib.List(
+                                [
+                                    _into_tag(block.dictionarify())
+                                    for block in self._palette
+                                ],
+                            ),
+                            block_position_data=_into_tag(
+                                self._special_blocks, sort_=lambda a: a[0]
+                            ),
+                        )
+                    ),
+                ),
+                structure_world_origin=_into_tag((0, 0, 0)),
+            ),
+            gzipped=False,
+            byteorder="little",
+        )
+
+    def dumpf(self, file_path: AnyStr) -> None:
         """
-        Serialize the structure as a ``mcstructure``.
+        Serialize the structure as a file.
+
+        Parameters
+        ----------
+        file_path
+            File path to write to.
+        """
+        self.nbtfilize().save(file_path, byteorder="little", gzipped=False)
+
+    def dump(self, file_: BinaryIO) -> None:
+        """
+        Serialize the structure as a ``mcstructure`` file.
 
         Parameters
         ----------
         file
             File object to write to.
         """
-        NBTFile(
-            value=dict(
-                format_version=TAG_Int(1),
-                size=TAG_List(TAG_Int, map(TAG_Int, self._size)),
-                structure=TAG_Compound(
-                    dict(
-                        block_indices=TAG_List(
-                            TAG_List,
-                            [
-                                TAG_List(
-                                    TAG_Int,
-                                    map(TAG_Int, self.structure_indecis.flatten()),
-                                ),
-                                TAG_List(
-                                    TAG_Int,
-                                    map(
-                                        TAG_Int, repeat(-1, self.structure_indecis.size)
-                                    ),
-                                ),
-                            ],
-                        ),
-                        entities=TAG_List(TAG_Compound, []),
-                        palette=TAG_Compound(
-                            dict(
-                                default=TAG_Compound(
-                                    dict(
-                                        block_palette=TAG_List(
-                                            TAG_Compound,
-                                            [
-                                                TAG_Compound(
-                                                    dict(
-                                                        name=TAG_String(
-                                                            block.identifier
-                                                        ),
-                                                        states=TAG_Compound(
-                                                            {
-                                                                state_name: _into_tag(
-                                                                    state_value
-                                                                )
-                                                                for state_name, state_value in block.states.items()
-                                                            }
-                                                        ),
-                                                        version=TAG_Int(
-                                                            block.compability_version
-                                                        ),
-                                                    )
-                                                )
-                                                for block in self._palette
-                                            ],
-                                        ),
-                                        block_position_data=TAG_Compound(
-                                            dict(
-                                                sorted(
-                                                    [
-                                                        (
-                                                            str(block_index),
-                                                            _into_tag(extra_data),
-                                                        )
-                                                        for block_index, extra_data in self._special_blocks.items()
-                                                    ],
-                                                    key=lambda a: a[0],
-                                                )
-                                            )
-                                        ),
-                                    )
-                                )
-                            )
-                        ),
-                    )
-                ),
-                structure_world_origin=TAG_List(TAG_Int, [0, 0, 0]),
-            ),
-            little_endian=True,
-        ).save(file, little_endian=True)
+        self.nbtfilize().write(file_, byteorder="little")
 
     def mirror(self, axis: str) -> Structure:
         """
@@ -553,6 +569,8 @@ class Structure:
             self.structure_indecis = self.structure_indecis[::-1, :, :]
         elif axis in "Zz":
             self.structure_indecis = self.structure_indecis[:, :, ::-1]
+        elif axis in "Yy":
+            self.structure_indecis = self.structure_indecis[:, ::-1, :]
         else:
             raise ValueError(f"invalid argument for 'rotation' ({axis!r})")
         return self
