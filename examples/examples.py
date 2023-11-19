@@ -1,6 +1,6 @@
-from TrimMCStruct import Block, Structure
+from TrimMCStruct import Block, mcStructure
 
-struct = Structure(
+struct = mcStructure(
     (6, 6, 6),  # Size of the Structure     声明结构大小，注意这是大小，其坐标从0开始
     Block.from_identifier("minecraft:air")	# pre-fill blocks   预填充方块
 )

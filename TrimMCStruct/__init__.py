@@ -11,7 +11,7 @@ Terms & Conditions: ../LICENSE.md
 
 """
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 __author__ = (
     ("phoenixR", "phoenixR"),
     ("金羿", "Eilles Wan"),
@@ -19,11 +19,17 @@ __author__ = (
 )
 __all__ = [
     # main class
-    "Structure",
+    "MatrixStructure",
     "Block",
+
+    # subclass
+    "mcStructure",
 
     # functions
     "is_valid_structure_name",
+    "nbtag_into_pyobj",
+    "pyobj_into_nbttag"
 ]
 
 from .main import *
+from .mcstructure import mcStructure

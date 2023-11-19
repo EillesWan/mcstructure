@@ -21,6 +21,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/TriM-Organization/TrimMCStruct",
     packages=setuptools.find_packages(),
+    include_package_data=True,
     classifiers=[
         "Intended Audience :: Developers",
         "Natural Language :: English",

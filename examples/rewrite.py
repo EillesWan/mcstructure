@@ -1,8 +1,8 @@
-from TrimMCStruct import Structure
+from TrimMCStruct import mcStructure
 
 p = input("path:")
 with open(p, "rb") as f:
-    struct = Structure.load(f)
+    struct = mcStructure.load(f)
 
 
 with open("output.mcstructure", "wb") as f:

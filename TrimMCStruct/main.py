@@ -1,14 +1,6 @@
 """
-Read and write Minecraft .mcstructure files.
+Operating the Minecraft structures.
 """
-
-# TODO: coordinates might be in wrong order (XYZ -> ZYX)
-# TODO: make Structure._structure public
-# TODO: test mirror
-# TODO: test rotate
-# TODO: second layer (waterlogged blocks)
-# TODO: entities
-# TODO: export as 3d model (might be extension)
 
 from __future__ import annotations
 
@@ -23,39 +15,51 @@ from numpy.typing import NDArray
 import nbtlib
 
 
+
+
 Coordinate = Tuple[int, int, int]
 
 # Compatibility versioning number for blocks in 1.19.
 COMPABILITY_VERSION: nbtlib.Int = nbtlib.Int(17959425)
 
 
-# def _into_pyobj(tag: nbt.Base) -> Any:
-#     """
-#     Turns an NBT tree into a python tree.
-#     """
-#     if isinstance(tag, (nbt.Compound, dict)):
-#         res = {}
-#         for key, value in tag.items():
-#             if isinstance(value, (nbt.Numeric, nbt.String)):
-#                 value = _into_pyobj(value)
-#             res[key] = value
-#         return res
+def nbtag_into_pyobj(tag_obj: nbtlib.Base) -> Any:
+    """
+    Turns an NBT tree into a python tree.
+    """
+    if isinstance(tag_obj, (nbtlib.Compound, dict)):
+        res = {}
+        for key, value in tag_obj.items():
+            if isinstance(value, (nbtlib.Numeric, nbtlib.String)):
+                value = nbtag_into_pyobj(value)
+            res[key] = value
+        return res
 
-#     elif isinstance(tag, (nbt.List, list)):
-#         res = []
-#         for value in tag:
-#             if isinstance(value, (nbt.Numeric, nbt.String)):
-#                 value = _into_pyobj(value)
-#             res.append(value)
-#         return res
+    elif isinstance(tag_obj, (nbtlib.List, list)):
+        res = []
+        for value in tag_obj:
+            if isinstance(value, (nbtlib.Numeric, nbtlib.String)):
+                value = nbtag_into_pyobj(value)
+            res.append(value)
+        return res
 
-#     elif isinstance(tag, (nbt.Numeric, nbt.String)):
-#         return tag
+    elif isinstance(tag_obj, (nbtlib.Double,nbtlib.Float)):
+        return float(tag_obj)
+    
+    elif isinstance(tag_obj,(nbtlib.Byte)):
+        return bool(tag_obj)
 
-#     return tag
+    elif isinstance(tag_obj,nbtlib.NumericInteger):
+        return int(tag_obj)
+    
+    elif isinstance(tag_obj,(nbtlib.String)):
+        return str(tag_obj)
+    
+
+    return tag_obj
 
 
-def _into_tag(
+def pyobj_into_nbttag(
     obj: Any,
     sort_: Optional[Union[bool, Callable]] = False,
     sort_order: Optional[bool] = False,
@@ -70,7 +74,7 @@ def _into_tag(
                 (
                     value
                     if isinstance(value, (nbtlib.Numeric, nbtlib.String))
-                    else _into_tag(value)
+                    else pyobj_into_nbttag(value)
                 ),
             )
             for key, value in obj.items()
@@ -91,7 +95,7 @@ def _into_tag(
             (
                 value
                 if isinstance(value, (nbtlib.Numeric, nbtlib.String))
-                else _into_tag(value)
+                else pyobj_into_nbttag(value)
             )
             for value in obj
         ]
@@ -331,7 +335,9 @@ class Block:
         return another_self
 
 
-class Structure:
+
+
+class MatrixStructure:
     """
     Class representing a Minecraft structure that
     consists of blocks and entities.
@@ -346,97 +352,58 @@ class Structure:
 
     def __init__(
         self,
-        size: tuple[int, int, int],
-        fill: Optional[Block] = None,
+        default_block: Optional[Block] = None,
         compability_version: int = COMPABILITY_VERSION,
     ):
         """
         Parameters
         ----------
-        size
-            The size of the structure.
 
-        fill
-            Fill the structure with this block at
+        default_block
+            What is the default block for the
             creation of a new structure object.
 
-            However, extra datas of blocks cannot be filled.
-
             If this is set to ``None`` the structure
-            is filled with "Structure Void" blocks.
-
-            "None" is used as default.
+            then the default will be "Structure Void"
         """
 
         self.structure_indecis: NDArray[np.intc]
 
-        self._size = size
         self._palette: List[Block] = []
         self._special_blocks: Dict[int, Dict] = {}
-
-        if fill is None:
-            self.structure_indecis = np.full(size, nbtlib.Int(-1), dtype=np.intc)
-
-        else:
-            self.structure_indecis = np.zeros(size, dtype=np.intc)
-            self._palette.append(fill)
 
         self.compability_version = compability_version
 
     @classmethod
     def loadf(cls, file_path: AnyStr):
-        with open(
-            file_path,
-            "rb",
-        ) as f:
-            return cls.load(f)
-
-    @classmethod
-    def load(cls, file_: BinaryIO):
         """
-        Loads an mcstructure file.
+        Load an MatrixStructure file.
 
         Parameters
         ----------
-        file
+        file_path
+            File path to open.
+        """
+        pass
+
+    @classmethod
+    def load(cls, file_io: BinaryIO):
+        """
+        Load an MatrixStructure file via BinaryIO.
+
+        Parameters
+        ----------
+        file_io
             File object to read.
         """
-        nbt = nbtlib.File.from_fileobj(file_, byteorder="little")
-        size: tuple[int, int, int] = (nbt["size"][0], nbt["size"][1], nbt["size"][2])
-
-        struct = cls(size)
-
-        # see https://wiki.bedrock.dev/nbt/mcstructure.html
-        # of a .mcstructure file's NBT format
-        # while Chinese developers could see my translation at
-        # ../docs/mcstructure%E6%96%87%E4%BB%B6%E7%BB%93%E6%9E%84.md
-
-        struct.structure_indecis = np.array(
-            nbt["structure"]["block_indices"][0],
-            dtype=np.intc,
-        ).reshape(size)
-
-        struct._palette.extend(
-            [
-                Block.from_identifier(
-                    block["name"],
-                    **block["states"],
-                    compability_version=block["version"],
-                )
-                for block in nbt["structure"]["palette"]["default"]["block_palette"]
-            ]
-        )
-
-        for block_index, block_extra_data in nbt["structure"]["palette"]["default"][
-            "block_position_data"
-        ].items():
-            struct._special_blocks[int(block_index)] = block_extra_data
-
-        return struct
+        pass
 
     @property
-    def size(self) -> tuple[int, int, int]:
-        return self._size
+    def size(self) -> Coordinate:
+
+        # TODO
+
+        return 0,0,0
 
     def __repr__(self) -> str:
         return repr(self._get_str_array())
@@ -467,42 +434,17 @@ class Structure:
         )
         return vec(arr)
 
-    def _add_block_to_palette(self, block: Optional[Block]) -> int:
-        """
-        Adds a block to the palette.
-
-        Parameters
-        ----------
-        block
-            The block to add. If this is set to ``None``
-            "Structure Void" will be used.
-
-        Returns
-        -------
-        The position of the block in the palette. This is
-        ``-1`` when ``None`` is used as ``block``.
-        """
-        if block is None:
-            return -1
-
-        same_block = block.clear_extra_data()
-        if same_block in self._palette:
-            return self._palette.index(same_block)
-
-        self._palette.append(same_block)
-        return len(self._palette) - 1
-
     def nbtfilize(
         self,
     ) -> nbtlib.File:
         return nbtlib.File(
             dict(
                 format_version=nbtlib.Int(1),
-                size=_into_tag(self._size),
+                size=pyobj_into_nbttag(self.size),
                 structure=nbtlib.Compound(
                     block_indices=nbtlib.List(
                         [
-                            _into_tag(
+                            pyobj_into_nbttag(
                                 self.structure_indecis.flatten(),
                             ),
                             nbtlib.List(
@@ -517,17 +459,17 @@ class Structure:
                         default=nbtlib.Compound(
                             block_palette=nbtlib.List(
                                 [
-                                    _into_tag(block.dictionarify())
+                                    pyobj_into_nbttag(block.dictionarify())
                                     for block in self._palette
                                 ],
                             ),
-                            block_position_data=_into_tag(
+                            block_position_data=pyobj_into_nbttag(
                                 self._special_blocks, sort_=lambda a: a[0]
                             ),
                         )
                     ),
                 ),
-                structure_world_origin=_into_tag((0, 0, 0)),
+                structure_world_origin=pyobj_into_nbttag((0, 0, 0)),
             ),
             gzipped=False,
             byteorder="little",
@@ -542,7 +484,7 @@ class Structure:
         file_path
             File path to write to.
         """
-        self.nbtfilize().save(file_path, byteorder="little", gzipped=False)
+        pass
 
     def dump(self, file_: BinaryIO) -> None:
         """
@@ -553,9 +495,9 @@ class Structure:
         file
             File object to write to.
         """
-        self.nbtfilize().write(file_, byteorder="little")
+        pass
 
-    def mirror(self, axis: str) -> Structure:
+    def mirror(self, axis: str) -> MatrixStructure:
         """
         Flips the structure.
 
@@ -575,7 +517,7 @@ class Structure:
             raise ValueError(f"invalid argument for 'rotation' ({axis!r})")
         return self
 
-    def rotate(self, by: int) -> Structure:
+    def rotate(self, by: int) -> MatrixStructure:
         """
         Rotates the structure.
 
@@ -641,7 +583,7 @@ class Structure:
         self,
         coordinate: Coordinate,
         block: Optional[Block],
-    ) -> Structure:
+    ) -> MatrixStructure:
         """
         Puts a block into the structure.
 
@@ -654,16 +596,6 @@ class Structure:
             The block to place. If this is set to ``None``
             "Structure Void" blocks will be used.
         """
-        x, y, z = coordinate
-
-        ident = self._add_block_to_palette(block)
-
-        self.structure_indecis[x, y, z] = ident
-        if block:
-            if block.extra_data:
-                self._special_blocks[
-                    x * self.size[2] * self.size[1] + y * self.size[2] + z
-                ] = block.extra_data
         return self
 
     def fill_blocks(
@@ -671,7 +603,7 @@ class Structure:
         from_coordinate: Coordinate,
         to_coordinate: Coordinate,
         block: Optional[Block],
-    ) -> Structure:
+    ) -> MatrixStructure:
         """
         Puts multiple blocks into the structure.
 
@@ -691,43 +623,4 @@ class Structure:
             The block to place. If this is set to ``None``
             "STructure Void" blocks will be used to fill.
         """
-        fx, fy, fz = from_coordinate
-        tx, ty, tz = to_coordinate
-
-        ident = self._add_block_to_palette(block)
-
-        # print([[[ident for k in range(abs(fz-tz)+1) ]for j in range(abs(fy-ty)+1)]for i in range(abs(fx-tx)+1)])
-        self.structure_indecis[fx : tx + 1, fy : ty + 1, fz : tz + 1] = np.array(
-            [
-                [
-                    [ident for k in range(abs(fz - tz) + 1)]
-                    for j in range(abs(fy - ty) + 1)
-                ]
-                for i in range(abs(fx - tx) + 1)
-            ],
-            dtype=np.intc,
-        ).reshape([abs(i) + 1 for i in (fx - tx, fy - ty, fz - tz)])
-
-        if block:
-            if block.extra_data:
-                self._special_blocks.update(
-                    dict(
-                        zip(
-                            [
-                                (x * self.size[2] * self.size[1] + y * self.size[2] + z)
-                                for x in range(fx, tx)
-                                for y in range(fy, ty)
-                                for z in range(fz, tz)
-                            ],
-                            [
-                                block.extra_data
-                                for i in range(
-                                    abs((fz - tz) + 1)
-                                    * (abs(fy - ty) + 1)
-                                    * (abs(fx - tx) + 1)
-                                )
-                            ],
-                        )
-                    )
-                )
         return self

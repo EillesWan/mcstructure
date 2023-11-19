@@ -52,9 +52,9 @@ file_path = format_ipt("file_path: ",os.path.exists,"Err: not found")[0]
 with open(file_path,'rb+') as f:
     nbt = NBTFile(f, little_endian=True)
 
-from TrimMCStruct.main import _into_pyobj
+from TrimMCStruct.main import nbtag_into_pyobj
 
-MainConsole.print(_into_pyobj(nbt),style="#F0F2F4 on #121110",)
+MainConsole.print(nbtag_into_pyobj(nbt),style="#F0F2F4 on #121110",)
 
 # def deep(sth):
 #     if type(sth) == TAG_List:
