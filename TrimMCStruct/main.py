@@ -92,7 +92,7 @@ def is_valid_structure_name(name: str, *, with_prefix: bool = False) -> bool:
     """
     Validates the structure name.
 
-    .. seealso: https://minecraft.fandom.com/wiki/Structure_Block
+    .. seealso: https://minecraft.wiki/w/Structure_Block
 
     Parameters
     ----------

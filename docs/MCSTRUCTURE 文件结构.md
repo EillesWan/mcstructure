@@ -26,7 +26,7 @@
 
 
 
-# `.Mcstructure` 文件结构
+# `.MCSTRUCTURE` 文件结构
 
 
 
