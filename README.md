@@ -6,7 +6,7 @@
 	/>
 	<h1 align="center">TrimMCStruct</h1>
 	<p align="center">
-		对于《我的世界》<code>.mcstructure</code> 文件的读写操作库
+		对于《我的世界》结构的操作编辑库
 	</p>
 
 
